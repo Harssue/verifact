@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VeriFact - Automated Fact Verification</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="background-overlay"></div>
+    
+    <div class="container">
+        <header>
+            <h1><span class="highlight">Veri</span>Fact</h1>
+            <p>Automated Fact Verification using LLMs and RAG</p>
+        </header>
+
+        <section class="input-section">
+            <form action="/verify" method="post" id="verify-form">
+                <div class="input-wrapper">
+                    <textarea name="user_text" id="user_text" placeholder="Enter a paragraph with factual claims (e.g., Albert Einstein was born in Germany and discovered gravity.)" required>{{ user_text if user_text else '' }}</textarea>
+                </div>
+                <button type="submit" class="btn primary-btn" id="submit-btn">
+                    <span>Verify Facts</span>
+                    <div class="loader-spinner default-hidden" id="btn-spinner"></div>
+                </button>
+            </form>
+        </section>
+
+        {% if results %}
+        <section class="results-section">
+            <h2>Verification Results</h2>
+            <div class="results-container">
+                {% for result in results %}
+                <div class="result-card verdict-{{ result.verdict | lower | replace(' ', '-') }}">
+                    <div class="verdict-banner">
+                        <span class="verdict-badge">{{ result.verdict }}</span>
+                    </div>
+                    <div class="card-content">
+                        <div class="claim-box">
+                            <strong>Claim:</strong> {{ result.claim }}
+                        </div>
+                        <div class="explanation-box">
+                            <strong>Explanation:</strong> {{ result.explanation }}
+                        </div>
+                        <div class="source-box">
+                            <strong>Source:</strong> <span class="source-tag">{{ result.source }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
