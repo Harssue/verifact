@@ -23,6 +23,26 @@
                 <div class="input-wrapper">
                     <textarea name="user_text" id="user_text" placeholder="Enter a paragraph with factual claims (e.g., Albert Einstein was born in Germany and discovered gravity.)" required>{{ user_text if user_text else '' }}</textarea>
                 </div>
+                
+                <div class="consent-wrapper" style="margin-top: 15px; margin-bottom: 20px; font-size: 0.9em; text-align: left;">
+                    <label>
+                        <input type="checkbox" name="dpdp_consent" value="yes" required>
+                        <strong>DPDP 2022 Consent:</strong> I agree to the processing of my data. 
+                        (My Personal Identifiable Information and Healthcare Data will be locally minimized before API transmission).
+                    </label>
+                </div>
+                
+                {% if error_msg %}
+                <div style="color: #ff4d4f; padding-bottom: 10px; font-weight: bold;">
+                    {{ error_msg }}
+                </div>
+                {% endif %}
+                
+                {% if info_msg %}
+                <div style="color: #52c41a; padding-bottom: 10px; font-weight: bold;">
+                    {{ info_msg }}
+                </div>
+                {% endif %}
                 <button type="submit" class="btn primary-btn" id="submit-btn">
                     <span>Verify Facts</span>
                     <div class="loader-spinner default-hidden" id="btn-spinner"></div>
@@ -33,6 +53,14 @@
         {% if results %}
         <section class="results-section">
             <h2>Verification Results</h2>
+            
+            {% if clean_text %}
+            <div style="background-color: #f0f8ff; color: #0056b3; padding: 10px; margin-bottom: 20px; border-radius: 8px; font-size: 0.9em;">
+                <strong>Privacy Filter Applied (Data Minimization):</strong><br>
+                <i>{{ clean_text }}</i>
+            </div>
+            {% endif %}
+            
             <div class="results-container">
                 {% for result in results %}
                 <div class="result-card verdict-{{ result.verdict | lower | replace(' ', '-') }}">
@@ -54,6 +82,12 @@
                 {% endfor %}
             </div>
         </section>
+        
+        <form action="/right_to_be_forgotten" method="post" style="margin-top: 20px;">
+            <button type="submit" style="background-color: #ff4d4f; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 0.85em;">
+                Exercise Right To Be Forgotten (GDPR Art. 17)
+            </button>
+        </form>
         {% endif %}
     </div>
 
