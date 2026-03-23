@@ -9,6 +9,7 @@ from core.claim_decomposition import extract_claims
 from core.evidence_retrieval import retrieve_evidence
 from core.verification import verify_claim
 from core.privacy_filter import process_dpdp_compliance
+import pandas as pd
 
 load_dotenv()
 
@@ -31,7 +32,8 @@ async def verify_text(
     request: Request, 
     user_text: str = Form(...),
 # DPDP Requirement: Grounds for Processing Data (Requires Explicit User Consent)
-    dpdp_consent: str = Form(None) 
+    dpdp_consent: str = Form(None),
+    patient_id: str = Form(None)
 ):
     if not dpdp_consent:
         return templates.TemplateResponse(request=request, name="index.html", context={
@@ -48,9 +50,24 @@ async def verify_text(
     
     results = []
     
+    # Check if a Patient ID was provided to query the local "Hospital Database"
+    fetched_ehr_text = ""
+    if patient_id and patient_id.strip():
+        try:
+            df = pd.read_csv("data/ehr_database.csv", dtype=str)
+            patient_record = df[df["patient_id"] == patient_id.strip()]
+            if not patient_record.empty:
+                fetched_ehr_text = patient_record.iloc[0]["ehr_text"]
+        except Exception as e:
+            print(f"Database error: {e}")
+
     for claim in claims:
-        # 2. Retrieve Evidence
-        evidence, source = retrieve_evidence(claim)
+        # 2. Retrieve Evidence (If EHR is found in DB, use it as Ground Truth)
+        if fetched_ehr_text:
+            evidence = fetched_ehr_text
+            source = f"Hospital Database (Patient ID: {patient_id.strip()})"
+        else:
+            evidence, source = retrieve_evidence(claim)
         
         # 3. Verify Claim
         if evidence:

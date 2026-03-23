@@ -21,7 +21,13 @@
         <section class="input-section">
             <form action="/verify" method="post" id="verify-form">
                 <div class="input-wrapper">
-                    <textarea name="user_text" id="user_text" placeholder="Enter a paragraph with factual claims (e.g., Albert Einstein was born in Germany and discovered gravity.)" required>{{ user_text if user_text else '' }}</textarea>
+                    <label style="font-weight: bold; margin-bottom: 5px; display: block; text-align: left;">1. Clinical Note / Text to Verify:</label>
+                    <textarea name="user_text" id="user_text" placeholder="Enter a paragraph with factual claims or a Brief Hospital Course (e.g., The patient was treated with 500mg Amoxicillin.)" required>{{ user_text if user_text else '' }}</textarea>
+                </div>
+
+                <div class="input-wrapper" style="margin-top: 15px;">
+                    <label style="font-weight: bold; margin-bottom: 5px; display: block; text-align: left;">2. Reference Electronic Health Record (EHR) Lookup:</label>
+                    <input type="text" name="patient_id" id="patient_id" placeholder="Enter Patient ID (e.g., 1001 or 1002). Skips Web Search and strictly verifies against the local hospital database." style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
                 </div>
                 
                 <div class="consent-wrapper" style="margin-top: 15px; margin-bottom: 20px; font-size: 0.9em; text-align: left;">
