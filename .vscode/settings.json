@@ -1,0 +1,6 @@
+{
+  "python.defaultInterpreterPath": "/home/pranshu-saxena/verifact/venv/bin/python",
+  "python.analysis.extraPaths": [
+    "/home/pranshu-saxena/verifact/venv/lib/python3.13/site-packages"
+  ]
+}

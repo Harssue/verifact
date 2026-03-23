@@ -1,0 +1,10 @@
+{
+  "site_package_search_strategy": "pep561",
+  "source_directories": [
+    "/home/pranshu-saxena/verifact"
+  ],
+  "search_path": [
+    "/home/pranshu-saxena/verifact",
+    "/home/pranshu-saxena/verifact/venv/lib/python3.13/site-packages"
+  ]
+}

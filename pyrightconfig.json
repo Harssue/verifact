@@ -1,0 +1,7 @@
+{
+  "venvPath": "/home/pranshu-saxena/verifact",
+  "venv": "venv",
+  "extraPaths": [
+    "/home/pranshu-saxena/verifact/venv/lib/python3.13/site-packages"
+  ]
+}
