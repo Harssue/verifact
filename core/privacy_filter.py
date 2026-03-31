@@ -56,11 +56,13 @@ def anonymize_sensitive_pii(text: str) -> str:
             r"\b(passport|driver'?s?\s*license|dl\s*no\.?|license\s*no\.?)\s*[:#-]?\s*[A-Za-z0-9-]{5,20}\b",
             "[REDACTED_GOVT_ID]",
         ),
-        # Biometric references and identifiers.
+        # Biometric references and identifiers (including biometric ID codes like FPS-XXXX-XXX-XXXXXX).
         (
             r"\b(fingerprint|retina|iris\s*scan|face\s*(scan|print|image|photo)|biometric\s*(record|template|id)?)\b",
             "[REDACTED_BIOMETRIC]",
         ),
+        # Biometric ID codes: patterns like FPS-2024-001-XXX or similar alphanumeric sequences
+        (r"\b[A-Z]{2,4}-\d{4}-\d{3,4}-[A-Za-z0-9]{6,12}\b", "[REDACTED_BIOMETRIC]"),
         # Structured medical record identifiers.
         (
             r"\b(medical\s*record\s*(number|no\.?|#)?|mrn|ehr\s*id|patient\s*id)\s*[:#-]?\s*[A-Za-z0-9-]{3,20}\b",
