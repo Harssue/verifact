@@ -1,53 +1,114 @@
 import re
 
-def anonymize_pii(text: str) -> str:
+
+CARD_CANDIDATE_PATTERN = re.compile(r"\b(?:\d[ -]*?){13,19}\b")
+
+
+def _passes_luhn(number: str) -> bool:
+    """Validate card-like numeric strings to reduce false positive masking."""
+    digits = [int(ch) for ch in number if ch.isdigit()]
+    if len(digits) < 13 or len(digits) > 19:
+        return False
+
+    checksum = 0
+    parity = len(digits) % 2
+    for idx, digit in enumerate(digits):
+        if idx % 2 == parity:
+            digit *= 2
+            if digit > 9:
+                digit -= 9
+        checksum += digit
+    return checksum % 10 == 0
+
+
+def _mask_financial_numbers(text: str) -> str:
+    # Redact card numbers only when they pass Luhn validation.
+    def replace_card(match: re.Match) -> str:
+        candidate = match.group(0)
+        if _passes_luhn(candidate):
+            return "[REDACTED_FINANCIAL_ACCOUNT]"
+        return candidate
+
+    text = CARD_CANDIDATE_PATTERN.sub(replace_card, text)
+
+    # Redact account numbers when context explicitly indicates bank/account data.
+    bank_account_pattern = re.compile(
+        r"\b(account\s*(number|no\.?|#)?|iban|swift|ifsc)\s*[:#-]?\s*[A-Za-z0-9-]{8,34}\b",
+        re.IGNORECASE,
+    )
+    return bank_account_pattern.sub("[REDACTED_FINANCIAL_ACCOUNT]", text)
+
+
+def anonymize_sensitive_pii(text: str) -> str:
     """
-    Implements Data Minimization and Privacy by Design (IT Act 2000, GDPR, DPDP 2022).
-    Before transferring data outside India (to HuggingFace APIs), we must redact 
-    Sensitive Personal Data (PII) such as emails, phone numbers, and identifying codes.
+    Redact direct/sensitive PII before sending text to external APIs.
+
+    Allowed (not redacted): non-sensitive/indirect PII such as name, email,
+    phone, address, DOB, ZIP, IP, and demographic attributes.
     """
-    # Redact Email Addresses
-    email_pattern = r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+'
-    text = re.sub(email_pattern, '[REDACTED_EMAIL]', text)
-    
-    # Redact Indian Phone Numbers (e.g., +91 9876543210 or 9876543210)
-    phone_pattern = r'(\+91[\-\s]?)?[6-9]\d{9}'
-    text = re.sub(phone_pattern, '[REDACTED_PHONE]', text)
-    
-    # Redact Aadhar Numbers (12 digits, optional spaces)
-    aadhar_pattern = r'\b\d{4}\s?\d{4}\s?\d{4}\b'
-    text = re.sub(aadhar_pattern, '[REDACTED_AADHAR]', text)
-    
-    return text
+    patterns = [
+        # US SSN formats: 123-45-6789 / 123 45 6789 / 123456789
+        (r"\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b", "[REDACTED_SSN]"),
+        # Aadhaar redaction only when explicit context is present.
+        (r"\b(aadhaar|aadhar)\s*(number|no\.?|#)?\s*[:#-]?\s*\d{4}\s?\d{4}\s?\d{4}\b", "[REDACTED_GOVT_ID]"),
+        # Passport / driver's license numbers when a keyword indicates document context.
+        (
+            r"\b(passport|driver'?s?\s*license|dl\s*no\.?|license\s*no\.?)\s*[:#-]?\s*[A-Za-z0-9-]{5,20}\b",
+            "[REDACTED_GOVT_ID]",
+        ),
+        # Biometric references and identifiers.
+        (
+            r"\b(fingerprint|retina|iris\s*scan|face\s*(scan|print|image|photo)|biometric\s*(record|template|id)?)\b",
+            "[REDACTED_BIOMETRIC]",
+        ),
+        # Structured medical record identifiers.
+        (
+            r"\b(medical\s*record\s*(number|no\.?|#)?|mrn|ehr\s*id|patient\s*id)\s*[:#-]?\s*[A-Za-z0-9-]{3,20}\b",
+            "[REDACTED_MEDICAL_RECORD]",
+        ),
+        # Labeled medical narratives often contain full record content.
+        (
+            r"\b(diagnosis|medical\s*history|chief\s*complaint|prescription|treatment\s*plan|lab\s*result[s]?)\s*:\s*[^\n]+",
+            "[REDACTED_MEDICAL_RECORD]",
+        ),
+    ]
+
+    for pattern, replacement in patterns:
+        text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
+
+    return _mask_financial_numbers(text)
+
 
 def redact_healthcare_data(text: str) -> str:
     """
-    Implements Unit V: Healthcare Data Protection & SeHA / NeHA protocols.
-    Data Minimization should only apply to the USER'S personal data, not public figures 
-    being fact-checked. We use regex to only mask diseases when preceded by 
-    first-person possessive phrases (e.g. 'my cancer', 'I have diabetes').
+    Redact self-referential health conditions as sensitive medical record data.
     """
     sensitive_medical_terms = [
-        "hiv", "cancer", "diabetes", "syphilis", "tumor", 
-        "depression", "schizophrenia", "pregnancy", "abortion"
+        "hiv",
+        "cancer",
+        "diabetes",
+        "syphilis",
+        "tumor",
+        "depression",
+        "schizophrenia",
+        "pregnancy",
+        "abortion",
+        "hepatitis",
+        "stroke",
+        "heart disease",
     ]
-    
-    # We build a pattern that looks for "I have ", "my ", "diagnosed me with ", etc.
-    # followed unconditionally by the medical term.
-    first_person_prefixes = r'\b(my|i have|i was diagnosed with|my diagnosis of|treating my)\s+'
-    
+
+    first_person_prefixes = r"\b(my|i have|i had|i was diagnosed with|my diagnosis of|treating my|my condition is)\s+"
+
     for term in sensitive_medical_terms:
-        # Combine the prefix and the term
-        pattern = re.compile(first_person_prefixes + term + r'\b', re.IGNORECASE)
-        # Replace the entire match (e.g., "my cancer") with a generic tag
-        text = pattern.sub(r'\1 [PROTECTED_HEALTH_DATA]', text)
-        
+        pattern = re.compile(first_person_prefixes + re.escape(term) + r"\b", re.IGNORECASE)
+        text = pattern.sub(r"\1 [REDACTED_MEDICAL_RECORD]", text)
+
     return text
 
+
 def process_dpdp_compliance(text: str) -> str:
-    """
-    Applies all required DPDP 2022 and GDPR protections.
-    """
-    text = anonymize_pii(text)
+    """Apply sensitive PII redaction required for compliant processing."""
+    text = anonymize_sensitive_pii(text)
     text = redact_healthcare_data(text)
     return text
