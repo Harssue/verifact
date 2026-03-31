@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from core.claim_decomposition import extract_claims
 from core.evidence_retrieval import retrieve_evidence
 from core.verification import verify_claim
-from core.privacy_filter import process_dpdp_compliance
+from core.privacy_filter import process_dpdp_compliance, anonymize_for_ehr_lookup
 import pandas as pd
 
 # Load environment variables from a local .env file if available.
@@ -76,6 +76,9 @@ async def verify_text(
             # Pull the first matched EHR text as evidence.
             if not patient_record.empty:
                 fetched_ehr_text = patient_record.iloc[0]["ehr_text"]
+                # DATA MINIMIZATION: Apply full EHR anonymization to fetched data
+                # Redact ALL PII categories (Direct + Indirect + Sensitive) for EHR lookups
+                fetched_ehr_text = anonymize_for_ehr_lookup(fetched_ehr_text)
         except Exception as e:
             # Keep service running even if local data source has issues.
             print(f"Database error: {e}")
