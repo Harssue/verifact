@@ -10,14 +10,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- Decorative background layer for visual depth -->
     <div class="background-overlay"></div>
     
     <div class="container">
+        <!-- Page header / branding -->
         <header>
             <h1><span class="highlight">Veri</span>Fact</h1>
             <p>Automated Fact Verification using LLMs and RAG</p>
         </header>
 
+        <!-- User input and consent form -->
         <section class="input-section">
             <form action="/verify" method="post" id="verify-form">
                 <div class="input-wrapper">
@@ -27,7 +30,7 @@
 
                 <div class="input-wrapper" style="margin-top: 15px;">
                     <label style="font-weight: bold; margin-bottom: 5px; display: block; text-align: left;">2. Reference Electronic Health Record (EHR) Lookup:</label>
-                    <input type="text" name="patient_id" id="patient_id" placeholder="Enter Patient ID (e.g., 1001 or 1002). Skips Web Search and strictly verifies against the local hospital database." style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
+                    <input type="text" name="patient_id" id="patient_id" value="{{ patient_id if patient_id else '' }}" placeholder="Enter Patient ID (e.g., 1001 or 1002). Skips Web Search and strictly verifies against the local hospital database." style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
                 </div>
                 
                 <div class="consent-wrapper" style="margin-top: 15px; margin-bottom: 20px; font-size: 0.9em; text-align: left;">
@@ -51,11 +54,13 @@
                 {% endif %}
                 <button type="submit" class="btn primary-btn" id="submit-btn">
                     <span>Verify Facts</span>
+                    <!-- Spinner is toggled by static/script.js during submit -->
                     <div class="loader-spinner default-hidden" id="btn-spinner"></div>
                 </button>
             </form>
         </section>
 
+        <!-- Verification output cards -->
         {% if results %}
         <section class="results-section">
             <h2>Verification Results</h2>
@@ -89,6 +94,7 @@
             </div>
         </section>
         
+        <!-- GDPR/DPDP informational action -->
         <form action="/right_to_be_forgotten" method="post" style="margin-top: 20px;">
             <button type="submit" style="background-color: #ff4d4f; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 0.85em;">
                 Exercise Right To Be Forgotten (GDPR Art. 17)

@@ -1,3 +1,4 @@
+/* Global theme variables shared across the UI. */
 :root {
     --bg-color: #0f172a;
     --card-bg: #1e293b;
@@ -11,12 +12,14 @@
     --border-color: #334155;
 }
 
+/* Reset default browser spacing and use border-box sizing model. */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
+/* Base page layout and typography settings. */
 body {
     font-family: 'Inter', sans-serif;
     background-color: var(--bg-color);
@@ -28,6 +31,7 @@ body {
     align-items: center;
 }
 
+/* Fixed radial glow background behind all content. */
 .background-overlay {
     position: fixed;
     top: 0;
@@ -38,6 +42,7 @@ body {
     z-index: -1;
 }
 
+/* Main centered content container. */
 .container {
     width: 100%;
     max-width: 900px;
@@ -47,11 +52,13 @@ body {
     gap: 3rem;
 }
 
+/* Header alignment and spacing. */
 header {
     text-align: center;
     margin-top: 2rem;
 }
 
+/* Brand title style. */
 header h1 {
     font-size: 3.5rem;
     font-weight: 700;
@@ -59,15 +66,18 @@ header h1 {
     margin-bottom: 0.5rem;
 }
 
+/* Color accent for partial logo text. */
 .highlight {
     color: var(--primary-color);
 }
 
+/* Subtitle style under product title. */
 header p {
     color: var(--text-secondary);
     font-size: 1.1rem;
 }
 
+/* Card styling for the input form area. */
 .input-section {
     background: var(--card-bg);
     padding: 2rem;
@@ -76,10 +86,12 @@ header p {
     box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
 }
 
+/* Vertical spacing between grouped inputs. */
 .input-wrapper {
     margin-bottom: 1.5rem;
 }
 
+/* Primary multiline text input area. */
 textarea {
     width: 100%;
     min-height: 150px;
@@ -94,12 +106,14 @@ textarea {
     transition: all 0.3s ease;
 }
 
+/* Highlight textarea while focused for clarity. */
 textarea:focus {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
+/* Legacy API key class retained for compatibility. */
 .api-key-input {
     width: 100%;
     background: rgba(15, 23, 42, 0.5);
@@ -112,12 +126,14 @@ textarea:focus {
     transition: all 0.3s ease;
 }
 
+/* Focus state for API key input if reused. */
 .api-key-input:focus {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
+/* Main action button layout and style. */
 .primary-btn {
     width: 100%;
     background: var(--primary-color);
@@ -135,12 +151,14 @@ textarea:focus {
     transition: all 0.3s ease;
 }
 
+/* Hover feedback for main action button. */
 .primary-btn:hover {
     background: var(--primary-hover);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
 }
 
+/* Utility class to hide elements by default. */
 .default-hidden {
     display: none;
 }
@@ -160,18 +178,21 @@ textarea:focus {
     100% { transform: rotate(360deg); }
 }
 
+/* Results section heading style. */
 .results-section h2 {
     font-size: 2rem;
     margin-bottom: 1.5rem;
     text-align: center;
 }
 
+/* Vertical stacking of result cards. */
 .results-container {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
 }
 
+/* Individual result card appearance. */
 .result-card {
     background: var(--card-bg);
     border-radius: 12px;
@@ -181,6 +202,7 @@ textarea:focus {
     transition: transform 0.3s ease;
 }
 
+/* Lift card on hover for visual affordance. */
 .result-card:hover {
     transform: translateY(-5px);
 }
@@ -190,6 +212,7 @@ textarea:focus {
 .verdict-false { border-left: 6px solid var(--verdict-false); }
 .verdict-not-enough-information { border-left: 6px solid var(--verdict-uncertain); }
 
+/* Verdict label chip style. */
 .verdict-badge {
     padding: 0.25rem 1rem;
     border-radius: 0 0 12px 0;
@@ -199,10 +222,12 @@ textarea:focus {
     display: inline-block;
 }
 
+/* Verdict-specific badge color variants. */
 .verdict-true .verdict-badge { background: rgba(16, 185, 129, 0.1); color: var(--verdict-true); }
 .verdict-false .verdict-badge { background: rgba(239, 68, 68, 0.1); color: var(--verdict-false); }
 .verdict-not-enough-information .verdict-badge { background: rgba(245, 158, 11, 0.1); color: var(--verdict-uncertain); }
 
+/* Inner card content spacing and flow. */
 .card-content {
     padding: 1.5rem;
     display: flex;
@@ -210,16 +235,19 @@ textarea:focus {
     gap: 1rem;
 }
 
+/* Claim row emphasis and divider. */
 .claim-box {
     font-size: 1.1rem;
     border-bottom: 1px solid var(--border-color);
     padding-bottom: 1rem;
 }
 
+/* Secondary text color for model explanation body. */
 .explanation-box {
     color: var(--text-secondary);
 }
 
+/* Pill styling for source labels. */
 .source-tag {
     background: rgba(255, 255, 255, 0.1);
     padding: 2px 8px;
