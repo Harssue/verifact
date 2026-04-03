@@ -10,7 +10,7 @@ CARD_CANDIDATE_PATTERN = re.compile(r"\b(?:\d[ -]*?){13,19}\b")
 
 # ============================================================================
 # DIRECT IDENTIFIERS: Government IDs, Financial Info, Medical/Health Info,
-# Biometric Data, Login Credentials, Contact & Name Information
+# Biometric Data, Login Credentials, Contact Information
 # ============================================================================
 DIRECT_IDENTIFIERS = [
     # GOVERNMENT ID NUMBERS
@@ -22,9 +22,6 @@ DIRECT_IDENTIFIERS = [
     (r"\b(aadhaar|aadhar)\s*(number|no\.?|#)?\s*[:#-]?\s*\d{4}\s?\d{4}\s?\d{4}\b", "[REDACTED_GOVT_ID]"),
     # Passport and driver's license with explicit context
     (r"\b(passport|driver'?s?\s*license|dl\s*no\.?|license\s*no\.?)\s*[:#-]?\s*[A-Za-z0-9-]{5,20}\b", "[REDACTED_GOVT_ID]"),
-    
-    # FULL NAMES (Direct identifier, especially when combined with other data)
-    (r"\b[A-Z][a-z]+\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?\b", "[REDACTED_NAME]"),
     
     # FINANCIAL INFORMATION
     # Credit card numbers (13-19 digits with optional spaces/hyphens)
@@ -61,6 +58,12 @@ DIRECT_IDENTIFIERS = [
     (r"\b(?:\+\d{1,3}[-.\s]?)?(?:\(?\d{0,3}\)?[-.\s]?)?\d{3}[-.\s]?\d{4}\b", "[REDACTED_PHONE]"),
     # Patient/Reference IDs that directly identify
     (r"\b(ref|reference|patient\s*ref)\s*[:#-]?\s*[A-Za-z0-9]{1,10}\b", "[REDACTED_PATIENT_REF]"),
+]
+
+# Names are handled separately so general verification can stay readable while
+# EHR lookups still get full anonymization.
+NAME_IDENTIFIERS = [
+    (r"\b[A-Z][a-z]+\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?\b", "[REDACTED_NAME]"),
 ]
 
 # ============================================================================
@@ -296,6 +299,7 @@ def anonymize_for_general_verification(text: str) -> str:
     - Sensitive PII (medical records, financial accounts, biometric data)
     
     Preserves:
+    - Names, so the verifier can still reason about who the claim refers to
     - Indirect Identifiers (gender, race, DOB, zip, place of birth, age)
       These are often contextual information in fact verification.
     
@@ -319,6 +323,7 @@ def anonymize_for_ehr_lookup(text: str) -> str:
     Redact PII for Electronic Health Records (EHR) lookups.
     
     Redacts:
+    - Names
     - Direct Identifiers (SSN, passport, driver's license, unique IDs)
     - Indirect Identifiers (gender, race, DOB, zip, place of birth, age)
     - Sensitive PII (medical records, financial accounts, biometric data)
@@ -329,6 +334,8 @@ def anonymize_for_ehr_lookup(text: str) -> str:
     Returns:
         Fully anonymized text safe for EHR processing and external APIs.
     """
+    # Apply names first so patient-facing records are fully anonymized.
+    text = _apply_patterns(text, NAME_IDENTIFIERS)
     # Apply direct identifier patterns first.
     text = _apply_patterns(text, DIRECT_IDENTIFIERS)
     # Then apply indirect identifier patterns.
